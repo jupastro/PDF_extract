@@ -9,6 +9,7 @@ from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.pdfpage import PDFPage
 from pdfminer.pdfparser import PDFParser
 from fuzzywuzzy import process,fuzz 
+from datetime import datetime
 
 def convert_pdf_to_string(file_path):
 
@@ -49,12 +50,15 @@ def split_to_title_and_pagenum(table_of_contents_entry):
     return title, pagenum
   
 def split_consultas_date(texto):
-    consultas=texto.split(sep='Resumen de consulta')
+	'''
+	texto(str): string from the EHR to be splitted 
+	'''
+    consultas=texto.split(sep='Resumen de consulta')# depending of the EHR this may vary 
     return consultas
 
-  from datetime import datetime
+  
 def fecha_nacimiento(texto):
-    # initializing substrings
+    # initializing substrings that lay next to the interesting string
     sub1 = "nacimiento:"
     sub2 = "Celular"
 
@@ -137,7 +141,7 @@ def medicacion_consulta(texto):
         for i in range(0,n):
             res[i]=str(res[i]).split()[0]
         return res
-    except:
+    except:#sometimes there is no more fields and directly appears the name of the medician. 
         
         sub2 = 'Ivan'
 
@@ -167,8 +171,8 @@ def standardize_list(init_list,standard_list):
         Variable = init_list[i] 
         Variable_final=process.extract(Variable,standard_list, scorer=fuzz.token_sort_ratio)[0]
 
-        print('La variable más parecida es: '+ str(Variable_final[0])+'\n ¿Se parece a '+Variable+'?')
-        if Variable_final[1]>80:
+        print('The closest variable is: '+ str(Variable_final[0])+'\n ¿Is it like '+Variable+'?')
+        if Variable_final[1]>80:#If the similitudes are bigger than a 80% the variable is standardized according to the list provided
             init_list[i]=Variable_final[0]
             print('Ambas variables son equivalentes')
         else:
